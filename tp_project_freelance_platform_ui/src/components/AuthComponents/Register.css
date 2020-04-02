@@ -1,0 +1,17 @@
+.bg {
+    background-image: url("https://mdbootstrap.com/img/Photos/Horizontal/Nature/full page/img(21).jpg");
+    height: 160vh;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    }
+
+    .errorMessage {
+        color: red;
+        font-size: 0.75em;
+        display: relative;
+      }
+      
+      .error {
+        border: 1px solid red;
+      }
