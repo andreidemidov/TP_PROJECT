@@ -1,6 +1,7 @@
 import React from 'react';
 import { Form, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import { userService } from '../../services/UserService';
 import './Register.css';
 
 const emailRegex = RegExp(
@@ -28,11 +29,15 @@ class Register extends React.Component {
         super(props);
         this.state = {
             email: null,
-            password: null,
+            firstName: null,
+            lastName: null,
+            password: null, 
             confirmPassword: null,
             role: null,
             formErrors: {
                 email: "",
+                firstName: "",
+                lastName: "",
                 password: "",
                 confirmPassword: "",
                 role: ""
@@ -53,15 +58,25 @@ class Register extends React.Component {
                     value.length < 6 ? "Minimum 6 characaters required ❌" : "";
                 break;
 
+            case "firstName":
+                formErrors.firstName = 
+                    value.length < 6 ? "Minimum 6 characaters required ❌" : ""
+                break;
+
+                case "lastName":
+                    formErrors.lastName = 
+                        value.length < 6 ? "Minimum 6 characaters required ❌" : ""
+                    break;
+
             case "confirmPassword":
                 formErrors.confirmPassword =
                     value.length < 6 ? "Minimum 6 characaters required ❌" : "";
 
-                formErrors.confirmPassword = 
-                    value !== this.state.password ? "Passwords not match ❌": ""
+                formErrors.confirmPassword =
+                    value !== this.state.password ? "Passwords not match ❌" : ""
                 break;
 
-            
+
             case "role":
                 formErrors.role =
                     value === "Choose role" ? "You need to choose a role for user" : "";
@@ -79,18 +94,21 @@ class Register extends React.Component {
         this.setState({ formErrors, [name]: value });
     }
 
-    handleSubmit = e => {
+    handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(this.state);
+        debugger;
         if (formValid(this.state)) {
-            console.log(`
-            --SUBMITTING--
-            Email: ${this.state.email}
-            Password: ${this.state.password}
-            Role: ${this.state.role}
-          `);
+            let user = {
+                emailAddress: this.state.email,
+                firstName: this.state.firstName,
+                lastName: this.state.lastName,
+                password: this.state.password,
+                role: this.state.role,
+            };
+
+            await userService.Register(user);
         } else {
-            console.log(formValid(this.state))
+            console.log(formValid(this.state));
             console.error("FORM INVALID - DISPLAY ERROR MESSAGE");
         }
     };
@@ -137,6 +155,40 @@ class Register extends React.Component {
 
                                     </Form.Group>
 
+                                    <Form.Group controlId="firstNameId">
+                                        <Form.Label style={{ float: "left" }}><h6><em>First Name</em></h6></Form.Label>
+                                        <Form.Control
+                                            className={formErrors.firstName.length > 0 ? "error" : null}
+                                            placeholder="First Name"
+                                            type="text"
+                                            name="firstName"
+                                            noValidate
+                                            onChange={this.handleChange}
+                                        />
+                                        {
+                                            formErrors.firstName.length > 0 && (
+                                                <h6><em className="errorMessage">{formErrors.firstName}</em></h6>
+                                            )}
+
+                                    </Form.Group>
+
+                                    <Form.Group controlId="lastNameId">
+                                        <Form.Label style={{ float: "left" }}><h6><em>Last Name</em></h6></Form.Label>
+                                        <Form.Control
+                                            className={formErrors.lastName.length > 0 ? "error" : null}
+                                            placeholder="Last Name"
+                                            type="text"
+                                            name="lastName"
+                                            noValidate
+                                            onChange={this.handleChange}
+                                        />
+                                        {
+                                            formErrors.lastName.length > 0 && (
+                                                <h6><em className="errorMessage">{formErrors.lastName}</em></h6>
+                                            )}
+
+                                    </Form.Group>
+
                                     <Form.Group controlId="formBasicPassword">
                                         <Form.Label style={{ float: "left" }}><h6><em>Password</em></h6></Form.Label>
                                         <Form.Control
@@ -168,11 +220,11 @@ class Register extends React.Component {
                                     </Form.Group>
 
                                     <label style={{ float: "left" }}><h6><em style={{ color: "white" }} >What role you will have?</em></h6></label>
-                                    <select 
+                                    <select
                                         className={formErrors.role.length > 0 ? "form-control error" : "form-control"}
                                         onChange={this.handleChange}
                                         required
-                                        name = "role"
+                                        name="role"
                                     >
                                         <option value="Choose role">Choose role</option>
                                         <option value="Employee">Employee</option>

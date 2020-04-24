@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Form, Button } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { userService } from '../../services/UserService';
+import { Link, Route } from 'react-router-dom';
 import "./Login.css";
 
 const emailRegex = RegExp(
@@ -30,6 +31,7 @@ class Login extends Component {
     this.state = {
       email: "",
       password: "",
+      authenticated: false,
       formErrors: {
         email: "",
         password: "",
@@ -55,91 +57,105 @@ class Login extends Component {
 
       case "password":
         formErrors.password =
-          value.length < 6 ? "Minimum 6 characaters required ❌" : "";
+          value.length < 4 ? "Minimum 4 characaters required ❌" : "";
+        break;
+
+      default:
         break;
     };
   }
 
-  handleSubmit = e => {
+  handleSubmit = async (e) => {
     e.preventDefault();
-
-    debugger;
-    if(formValid(this.state)){
-      console.log(this.state);
-    }else{
+    if (formValid(this.state)) {
+      var dataAuth;
+      await userService.Login(this.state.email, this.state.password).then((result) => {
+        this.setState({ authenticated: true });
+        dataAuth = result.token;
+        localStorage.setItem('login', JSON.stringify({
+          login: true,
+          token: result.token
+        }))
+      });
+      debugger;
+      if (dataAuth) {
+        this.props.history.push('/HomeEmployee');
+      }
+    } else {
       console.error("error plm");
     }
   }
 
 
-render() {
-  const { formErrors } = this.state;
+  render() {
+    const { formErrors } = this.state;
+    const {authenticated} = this.state;
+    return (
+     <div className="background">
+        <div className="container">
+          <div className="row">
+            <div className="col-md-4"></div>
+            <div className="col-md-5" style={{ height: "100vh" }}>
 
-  return (
-    <div className="background">
-      <div className="container">
-        <div className="row">
-          <div className="col-md-4"></div>
-          <div className="col-md-5" style={{ height: "100vh" }}>
+              <form
+                className="form align-middle w-75"
+                style={{
+                  position: "relative",
+                  margin: "50%",
+                  textAlign: "center"
+                }}
 
-            <form
-              className="form align-middle w-75"
-              style={{
-                position: "relative",
-                margin: "50%",
-                textAlign: "center"
-              }}
-
-              onSubmit={this.handleSubmit}
-            >
-              <h3>
-                <em>
-                  People FreeLance
+                onSubmit={this.handleSubmit}
+              >
+                <h3>
+                  <em>
+                    People FreeLance
                 </em>
-              </h3>
+                </h3>
 
-              <div className="form-group">
-                <Form.Group controlId="formBasicEmail">
-                  <Form.Label style={{ float: "left" }}><h6><em>Email address</em></h6></Form.Label>
-                  <Form.Control
-                    className={formErrors.email.length > 0 ? "error" : null}
-                    placeholder="Email"
-                    type="email"
-                    name="email"
-                    noValidate
-                    onChange={this.handleChange}
-                  />
-                  {
-                    formErrors.email.length > 0 && (
-                      <h6><em className="errorMessage">{formErrors.email}</em></h6>
+                <div className="form-group">
+                  <Form.Group controlId="formBasicEmail">
+                    <Form.Label style={{ float: "left" }}><h6><em>Email address</em></h6></Form.Label>
+                    <Form.Control
+                      className={formErrors.email.length > 0 ? "error" : null}
+                      placeholder="Email"
+                      type="email"
+                      name="email"
+                      noValidate
+                      onChange={this.handleChange}
+                    />
+                    {
+                      formErrors.email.length > 0 && (
+                        <h6><em className="errorMessage">{formErrors.email}</em></h6>
+                      )}
+
+                  </Form.Group>
+
+                  <Form.Group controlId="formBasicPassword">
+                    <Form.Label style={{ float: "left" }}><h6><em>Password</em></h6></Form.Label>
+                    <Form.Control
+                      className={formErrors.password.length > 0 ? "error" : null}
+                      placeholder="Password"
+                      type="password"
+                      name="password"
+                      noValidate
+                      onChange={this.handleChange}
+                    />
+                    {formErrors.password.length > 0 && (
+                      <span className="errorMessage">{formErrors.password}</span>
                     )}
-
-                </Form.Group>
-
-                <Form.Group controlId="formBasicPassword">
-                  <Form.Label style={{ float: "left" }}><h6><em>Password</em></h6></Form.Label>
-                  <Form.Control
-                    className={formErrors.password.length > 0 ? "error" : null}
-                    placeholder="Password"
-                    type="password"
-                    name="password"
-                    noValidate
-                    onChange={this.handleChange}
-                  />
-                  {formErrors.password.length > 0 && (
-                    <span className="errorMessage">{formErrors.password}</span>
-                  )}
-                </Form.Group>
-              </div>
-              <Button color="primary" type = "submit">Login</Button>{' '}
-              <p>Not registered? <Link to='/Register'>Create Account</Link></p>
-            </form>
+                  </Form.Group>
+                </div>
+                <Button color="primary" type="submit">Login</Button>{' '}
+                <p>Not registered? <Link to='/Register'>Create Account</Link></p>
+              </form>
+            </div>
           </div>
         </div>
+        <Route authenticated={authenticated}></Route>
       </div>
-    </div>
-  );
-}
+    );
+  }
 }
 
 export default Login;
